@@ -7,6 +7,7 @@ var config = require('../config.js')
 var Wechat = require('./wechat.js')
 var getRawBody = require('raw-body')
 var util = require('./util.js')
+// var handler = require()
 
 //  signature: '692ac6f55cbfacbc9a9faf76dac8fc34ae3bf8cd',
 //  echostr: '3420778034199525051',
@@ -14,7 +15,7 @@ var util = require('./util.js')
 //  nonce: '135059459'
 
 
-module.exports = () => {
+module.exports = (handler) => {
   var wechat = new Wechat()
   return async (ctx, next) => {
     console.log("ctx.query", ctx.query)
@@ -35,45 +36,53 @@ module.exports = () => {
       if (sha !== signature) {
         ctx.body = "wrong"
         return false
-      } 
-
+      }
+      
       var data = await getRawBody(ctx.req, {
         length: ctx.length,
         limit: '1mb',
         encoding: ctx.charse
       })
 
-      var content = await util.parseXMLAsync(data)   // 对xml格式进行解析
-      console.log("xml", content)
+      console.log("ctx.req返回的信息", ctx.req)
+      console.log("微信返回的信息", data)
+      var content = await util.parseXMLAsync(data) // 对xml格式进行解析
       var message = util.formatMessage(content.xml)
-      console.log("结果",message)
+      console.log("结果", message)
 
-      console.log("ctx", ctx)
+      ctx.weixin = message
 
-      // if(message.MsgType === 'event') {
-        // if(message.Event === 'subscribe') {
-          var now = new Date().getTime()
-          ctx.status = 200
-          ctx.type = "application/xml"
-          ctx.body = `<xml> 
-                      <ToUserName><![CDATA[${message.FromUserName}]]></ToUserName> 
-                      <FromUserName><![CDATA[${message.ToUserName}]]></FromUserName> 
-                      <CreateTime>${new Date().getTime()}</CreateTime> 
-                      <MsgType><![CDATA[text]]></MsgType> 
-                      <Content><![CDATA[这儿是JavaScript之禅]]></Content> 
-                      </xml>`
-          console.log("改变结果之后", ctx)
-          return ctx.body
-        // }
+      await handler.call(ctx, next)
+      wechat.reply.call(ctx)
+      // console.log("ctx", ctx)
+      // var now = new Date().getTime()
+      // if (message.MsgType === 'event') {
+      //   if (message.Event === 'subscribe') {
+      //     ctx.status = 200
+      //     ctx.type = "application/xml"
+      //     ctx.body = `<xml> 
+      //                 <ToUserName><![CDATA[${message.FromUserName}]]></ToUserName> 
+      //                 <FromUserName><![CDATA[${message.ToUserName}]]></FromUserName> 
+      //                 <CreateTime>${new Date().getTime()}</CreateTime> 
+      //                 <MsgType><![CDATA[text]]></MsgType> 
+      //                 <Content><![CDATA[你大哥是刘巧，他想问你是不是个大傻逼，大猪蹄子，啊哈哈哈！！你想问点啥？？？随便问！]]></Content> 
+      //                 </xml>`
+      //     console.log("改变结果之后", ctx)
+      //     return ctx.body
+      //   }
       // }
 
-      // <xml><ToUserName><![CDATA[gh_f7746fb87a28]]></ToUserName>
-      // <FromUserName><![CDATA[ogQVX1KXDhDAUtqETox238GX1jYk]]></FromUserName>
-      // <CreateTime>1533785590</CreateTime>
-      // <MsgType><![CDATA[event]]></MsgType>
-      // <Event><![CDATA[subscribe]]></Event>
-      // <EventKey><![CDATA[]]></EventKey>
-      // </xml>
+      // ctx.status = 200
+      // ctx.type = "application/xml"
+      // ctx.body = `<xml> 
+      //                 <ToUserName><![CDATA[${message.FromUserName}]]></ToUserName> 
+      //                 <FromUserName><![CDATA[${message.ToUserName}]]></FromUserName> 
+      //                 <CreateTime>${new Date().getTime()}</CreateTime> 
+      //                 <MsgType><![CDATA[text]]></MsgType> 
+      //                 <Content><![CDATA[我是刘巧大傻逼，喵喵说我是大猪蹄子，但是我超爱喵喵的，喵喵我爱你（づ￣3￣）づ╭～]]></Content> 
+      //                 </xml>`
+      // console.log("改变结果之后", ctx)
+      // return ctx.body
 
 
     }

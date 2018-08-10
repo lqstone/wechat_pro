@@ -2,7 +2,8 @@ var Koa=require('koa')
 var router = require('koa-router')();  /*引入是实例化路由** 推荐*/
 var sha1 = require('sha1')
 var wechat = require('./wechat/g.js')
-var app=new Koa()
+var weixin = require('./weixin.js')    // 处理微信逻辑
+var app = new Koa()
 
 // app.use(async (ctx,next)=>{
 //     console.log('1、这是第一个中间件01');
@@ -18,7 +19,7 @@ var app=new Koa()
 //     console.log('4、匹配路由完成以后又会返回来执行中间件');
 // })
 // 
-app.use(wechat())
+app.use(wechat(weixin.reply))   // 业务逻辑传给weixin.reply来处理
 router.get('/',async (ctx)=>{
     ctx.body="首页"
 })
