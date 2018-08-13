@@ -1,8 +1,12 @@
 /*
 	微信的所有业务逻辑
  */
-var Wechat = require('./wechat/wechat.js')
+var Wechat = require('../wechat/wechat.js')
 var wechatApi = new Wechat()
+var menu = require('./menu.js')
+var path = require('path')
+
+
 
 exports.reply = async function(next) {
     var message = this.weixin // 获取消息
@@ -28,6 +32,8 @@ exports.reply = async function(next) {
             this.body = '看到你扫了一下'
         } else if (message.Event === 'VIEW') {
             this.body = "您点击了菜单中的链接：" + message.EventKey
+        } else if (message.Event === 'VIEW') {
+            this.body = "您点击了菜单中的链接：" + message.EventKey
         }
     } else if (message.MsgType === 'text') {
         var content = message.Content
@@ -46,13 +52,13 @@ exports.reply = async function(next) {
                 url: 'https://www.bilibili.com/',
             }]
         } else if (content === '5') { // 新增临时素材图片
-            var data = await wechatApi.uploadMaterial('image', __dirname + '/2.png')
+            var data = await wechatApi.uploadMaterial('image', path.join(__dirname + '../2.png'))
             reply = {
                 type: 'image',
                 mediaId: data.media_id
             }
         } else if (content === '6') { // 新增临时素材视频
-            var data = await wechatApi.uploadMaterial('video', __dirname + '/2.mp4')
+            var data = await wechatApi.uploadMaterial('video', path.join(__dirname + '../2.mp4'))
             reply = {
                 type: 'video',
                 title: '这个是个视频文件',
@@ -60,7 +66,7 @@ exports.reply = async function(next) {
                 mediaId: data.media_id
             }
         } else if (content === '7') { // 永久素材的测试
-            var picData = await wechatApi.uploadMaterial('image', __dirname + '/2.png', {}) // 上传永久
+            var picData = await wechatApi.uploadMaterial('image', path.join(__dirname + '../2.png'), {}) // 上传永久
             var media = {
                 articles: [{
                     title: '哈哈哈',
@@ -86,7 +92,74 @@ exports.reply = async function(next) {
                 })
             })
             reply = news
+        } else if (content === '8') { // 素材的获取统计
+            var count = await wechatApi.countMaterial()
+            console.log(12121212, JSON.stringify(count))
+            var list = await wechatApi.batchMaterial({
+                type: 'news',
+                offset: 0,
+                count: 10
+            })
+            console.log(12121212, JSON.stringify(list))
+        } else if (content === '9') { // 创建用户分组
+            var data = await wechatApi.createGroup('VIP用户')
+            console.log("创建用户分组", JSON.stringify(data))
+
+        } else if (content === '9-1') { // 查询用户分组
+            var data = await wechatApi.fetchGroup()
+            console.log("查询用户分组", JSON.stringify(data))
+
+        } else if (content === '9-2') { // 查询用户所在组
+            var data = await wechatApi.checkGroup('ogQVX1KXDhDAUtqETox238GX1jYk')
+            console.log("查询用户所在组", JSON.stringify(data))
+
+        } else if (content === '9-3') { // 为用户list设置分组
+            var data = await wechatApi.batchTagGroup(['ogQVX1KXDhDAUtqETox238GX1jYk'], 100)
+            console.log("为用户list设置分组", JSON.stringify(data))
+
+        } else if (content === '10') { // 获取用户基本信息
+            var data = await wechatApi.fetchUser('ogQVX1KXDhDAUtqETox238GX1jYk')
+            console.log("获取用户基本信息", JSON.stringify(data))
+
+        } else if (content === '10-1') { // 获取用户列表
+            var data = await wechatApi.fetchListUser()
+            console.log("获取用户列表", JSON.stringify(data))
+
+        } else if (content === '11') { // 群发信息 text
+            var data = await wechatApi.sendByGroup('text', {
+                content: '那我就随便该店东西试试行不行'
+            })
+            console.log("群发信息", JSON.stringify(data))
+
+        } else if (content === '11-1') { // 群发信息 图文
+            var data = await wechatApi.sendByGroup('mpnews', {
+                media_id: 'zYjFTc1_E7H628g6UT_eCd4l3f35Fc_uJGLVSs_7RxY'
+            })
+            console.log("群发图文信息", JSON.stringify(data))
+            reply = '123'
+
+        } else if (content === '0') { // 群发信息 图文
+            wechatApi.deleteMenu().then(() => {
+                return wechatApi.createMenu(menu)
+            }).then((msg) => {
+                console.log("创建菜单", msg)
+            })
+
+        }else if (content === '12') { // 群发信息 图文
+            var semanticData = {
+                query: '查一下明天从北京到上海的南航机票',
+                city: '深圳',
+                category: 'flight,hotel',
+                uid: message.FromUserName
+            }
+            var data = await wechatApi.semantic(semanticData)
+            console.log("创建菜单", JSON.stringify(data))
+            reply = JSON.stringify(data)
+       
         }
+
+
+
         this.body = reply
     }
 

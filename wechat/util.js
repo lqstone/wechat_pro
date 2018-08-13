@@ -17,7 +17,7 @@ exports.parseXMLAsync = function (xml) {
 /*
 	递归实现result遍历成一个对象
  */
-exports.formatMessage = function (result) {    
+function formatMessage(result) {
 	var message = {}
 	if (typeof result === 'object') {
 		var keys = Object.keys(result)
@@ -47,6 +47,7 @@ exports.formatMessage = function (result) {
 	}
 	return message
 }
+exports.formatMessage = formatMessage
 
 /*
 	对tpl模板封装
