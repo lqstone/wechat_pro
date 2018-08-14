@@ -21,7 +21,7 @@ var tpl = heredoc(function() {/*
 	<link rel="stylesheet" href="">
 </head>
 <body>
-	<div>点击标题，开始录音翻译</div>
+	<div id="voice">点击标题，开始录音翻译</div>
 	<p id="title"></p>
 	<div id="poster"></div>
 </body>
@@ -42,6 +42,45 @@ wx.config({
 		'translateVoice'
     ] // 必填，需要使用的JS接口列表
 });
+
+
+wx.ready(function(){
+	wx.checkJsApi({
+	    jsApiList: ['onVoiceRecordEnd'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
+	    success: function(res) {
+	    	console.log(res)
+	    // 以键值对的形式返回，可用的api值true，不可用为false
+	    // 如：{"checkResult":{"chooseImage":true},"errMsg":"checkJsApi:ok"}
+	    }
+	});
+	var isRecording = false;
+	$('#voice').on('tap', function(){
+		if (!isRecording) {
+			isRecording = true;
+			wx.startRecord({
+				cancel: function(){
+					alert('取消授权')
+				}
+			})
+			return;
+		}
+		isRecording = false
+		wx.stopRecord({
+			success: function (res) {
+				var localId = res.localId;
+				wx.translateVoice({
+					localId: localId, // 需要识别的音频的本地Id，由录音相关接口获得
+					isShowProgressTips: 1, // 默认为1，显示进度提示
+					success: function (res) {
+						alert(res.translateResult); // 语音识别的结果
+					}
+				});
+			}
+		});
+	})
+})
+
+
 </script>
 </html>
 */})
