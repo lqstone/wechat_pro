@@ -1,5 +1,6 @@
 /*
     待办： 给promise加上异常捕获catch回调
+    票据的获取
  */
 
 
@@ -12,6 +13,7 @@ var _ = require('lodash')
 
 var prefix = 'https://api.weixin.qq.com/cgi-bin/'
 var semanticPrefix = 'https://api.weixin.qq.com/semantic/semproxy/search'   //  发送语义理解请求 接口
+
 
 var api = {
     accessToken: prefix + 'token?grant_type=client_credential',
@@ -54,6 +56,9 @@ var api = {
         del: prefix + 'menu/delete',
         current: prefix + 'get_current_selfmenu_info',   // 获取自定义菜单配置接口
     },
+    ticket: {
+        get: prefix + 'ticket/getticket',  // 获取jsapi_ticket 
+    }
 
 }
 
@@ -64,9 +69,31 @@ function Wechat() {
     this.appSecret = config.wechat.appSecret
     this.getAccessToken = config.wechat.getAccessToken
     this.saveAccessToken = config.wechat.saveAccessToken
+    this.getTicket = config.wechat.getTicket
+    this.saveTicket = config.wechat.saveTicket
 
     this.fetchAccessToken()
 
+}
+
+Wechat.prototype.fetchTicket = function(access_token) {
+   
+    return this.getTicket().then(data => {
+            try {
+                data = JSON.parse(data)
+            } catch (e) {
+                return this.updateTicket(access_token)
+            }
+            if (this.isValidTicket(data)) { // 判断合法性
+                return Promise.resolve(data)
+            } else {
+                return this.updateTicket(access_token)
+            }
+        })
+        .then((result) => {
+            this.saveTicket(result)
+            return Promise.resolve(result)
+        })
 }
 
 Wechat.prototype.fetchAccessToken = function() {
@@ -75,7 +102,7 @@ Wechat.prototype.fetchAccessToken = function() {
             return Promise.resolve(this)
         }
     }
-    this.getAccessToken().then(data => {
+    return this.getAccessToken().then(data => {
             try {
                 data = JSON.parse(data)
             } catch (e) {
@@ -89,7 +116,6 @@ Wechat.prototype.fetchAccessToken = function() {
             }
         })
         .then((result) => {
-            // console.log(1111111111111, result)
             // data = JSON.parse(data)
             this.access_token = result.access_token
             this.expires_in = result.expires_in
@@ -98,9 +124,7 @@ Wechat.prototype.fetchAccessToken = function() {
         })
 }
 
-/*
-	获取token纸
- */
+
 Wechat.prototype.isValidAccessToken = function(data) {
     if (!data || !data.access_token || !data.expires_in) {
         return false
@@ -116,22 +140,59 @@ Wechat.prototype.isValidAccessToken = function(data) {
     }
 }
 
+/*
+    获取token纸
+ */
 Wechat.prototype.updateAccessToken = function() {
     var appID = this.appID
     var appSecret = this.appSecret
     var url = api.accessToken + '&appid=' + appID + '&secret=' + appSecret
-    console.log("url-----------", url)
     return new Promise((resolve, reject) => {
         request({
             url: url,
             json: true
         }).then((res) => { // 对get 和 post 封装过的库
-            console.log(2222222222222222, res)
             // {
             //   errcode: 40013,
             //   errmsg: 'invalid appid hint: [5TkgQA00083612]',
             //   expires_in: NaN
             // }
+            var data = res.body
+            var now = (new Date().getTime())
+            var expires_in = now + (data.expires_in - 20) * 1000
+
+            data.expires_in = expires_in
+            resolve(data)
+        })
+    })
+}
+
+/*
+    获取ticket纸
+ */
+
+Wechat.prototype.isValidTicket = function(data) {
+    if (!data || !data.ticket || !data.expires_in) {
+        return false
+    }
+    var ticket = data.ticket
+    var expires_in = data.expires_in
+    var now = (new Date().getTime())
+
+    if (ticket && now < expires_in) { // 检查过期时间
+        return true
+    } else {
+        return false
+    }
+}
+
+Wechat.prototype.updateTicket = function(access_token) {
+    var url = api.ticket.get + '?access_token=' + access_token + '&type=jsapi'
+    return new Promise((resolve, reject) => {
+        request({
+            url: url,
+            json: true
+        }).then((res) => { 
             var data = res.body
             var now = (new Date().getTime())
             var expires_in = now + (data.expires_in - 20) * 1000
@@ -207,7 +268,6 @@ Wechat.prototype.uploadMaterial = function(type, material, permanent) {
             }
             request(options).then((res) => { // 
                 var _data = res.body
-                console.log("uploadMaterial", _data)
                 if (_data) {
                     resolve(_data)
                 } else {

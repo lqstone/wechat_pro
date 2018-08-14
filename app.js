@@ -1,24 +1,113 @@
 var Koa=require('koa')
-var router = require('koa-router')();  /*引入是实例化路由** 推荐*/
+var router = require('koa-router')()  /*引入是实例化路由** 推荐*/
+var crypto = require('crypto')
 var sha1 = require('sha1')
 var wechat = require('./wechat/g.js')
 var reply = require('./wx/reply.js')    // 处理微信逻辑
 var app = new Koa()
+var Wechat = require('./wechat/wechat.js')
+// var wechatApi = new Wechat()
+var ejs = require('ejs')
+var heredoc = require('heredoc')
 
-// app.use(async (ctx,next)=>{
-//     console.log('1、这是第一个中间件01');
-//     await next();
+var tpl = heredoc(function() {/*
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1"
+	<title>猜电影</title>
+	<link rel="stylesheet" href="">
+</head>
+<body>
+	<div>点击标题，开始录音翻译</div>
+	<p id="title"></p>
+	<div id="poster"></div>
+</body>
+<script src="http://zeptojs.com/zepto-docs.min.js"></script>
+<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script>
 
-//     console.log('5、匹配路由完成以后又会返回来执行中间件');
-// })
+wx.config({
+    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+    appId: 'wx2671f3910b456b07', // 必填，公众号的唯一标识
+    timestamp: "<%= timestamp %>", // 必填，生成签名的时间戳
+    nonceStr: "<%= noncestr %>", // 必填，生成签名的随机串
+    signature: "<%= signature %>",// 必填，签名
+    jsApiList: [
+		'startRecord',
+		'stopRecord',
+		'onVoiceRecordEnd',
+		'translateVoice'
+    ] // 必填，需要使用的JS接口列表
+});
+</script>
+</html>
+*/})
 
-// app.use(async (ctx,next)=>{
-//     console.log('2、这是第二个中间件02');
-//     await next();
+// 生成随机字符串
+var createNonce = function() {
+	return Math.random().toString(36).substr(2, 15)
+}
+// 生成时间戳
+var createTimestap = function() {
+	return parseInt(new Date().getTime() / 1000, 10) + ''
+}
+// 签名算法
+var _sign = function(noncestr, ticket, timestamp, url) {
+	var params = [
+		'noncestr=' + noncestr,
+		'jsapi_ticket=' + ticket,
+		'timestamp=' + timestamp,
+		'url=' + url
+	]
+	var str = params.sort().join('&')
+	console.log('str==============', str)
+	var shasum = crypto.createHash('sha1')
+	shasum.update(str)
+	return shasum.digest('hex')
+}
+// 实现签名算法
+function sign(ticket, url) {
+	console.log("ticket====================", ticket)
+	console.log("url=======================", url)
+	var noncestr = createNonce()
+	var timestamp = createTimestap()
+	var signature = _sign(noncestr, ticket, timestamp, url)
+	return {
+		noncestr: noncestr,
+		timestamp: timestamp,
+		signature: signature,
+	}
+}
+ 
+/*
+	路由页面
+ */
 
-//     console.log('4、匹配路由完成以后又会返回来执行中间件');
-// })
-// 
+app.use(async (ctx,next)=>{
+	// console.log('ctx.url=============', ctx.url)
+	if (ctx.url.indexOf('/movie') > -1) {
+		var wechatApi = new Wechat()
+		var data = await wechatApi.fetchAccessToken()
+		console.log('fetchAccessToken================', ticketData)
+		var access_token = data.access_token
+		var ticketData = await wechatApi.fetchTicket(access_token)
+		console.log('ticketData================', ticketData)
+		var ticket = ticketData.ticket
+		var url = ctx.href
+		var params = sign(ticket, url)
+		ctx.body = ejs.render(tpl, params)
+		return next()
+	}
+    await next();
+})
+
+
+
+
+
 app.use(wechat(reply.reply))   // 业务逻辑传给weixin.reply来处理
 router.get('/',async (ctx)=>{
     ctx.body="首页"

@@ -30,14 +30,14 @@ module.exports = (handler) => {
       if (sha === signature) {
         ctx.body = echostr + ''
       } else {
-        ctx.body = "wrong"
+        return await next();
       }
     } else if (ctx.method === 'POST') {
       if (sha !== signature) {
         ctx.body = "wrong"
-        return false
+        return await next();
       }
-      
+
       var data = await getRawBody(ctx.req, {
         length: ctx.length,
         limit: '1mb',
