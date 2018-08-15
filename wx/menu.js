@@ -1,53 +1,53 @@
 module.exports = {
-	"button": [{
-		"type": "click",
-		"name": "今日歌曲",
-		"key": "menu_click"
-	}, {
-		"name": "菜单1",
-		"sub_button": [{
-			"type": "view",
-			"name": "语音搜索",
-			"url": "http://3cfa7c1f.ngrok.io/movie"
-		}, {
-			"type": "click",
-			"name": "赞一下我们",
-			"key": "V1001_GOOD"
-		}, {
-			"type": "scancode_waitmsg",
-			"name": "扫码推送",
-			"key": "qr_scan"
-		},{
-            "type": "pic_sysphoto", 
-            "name": "系统拍照发图", 
-            "key": "pic_photo", 
-           "sub_button": [ ]
-         }]
-	}, {
-		"name": "菜单2",
-		"sub_button": [{
-			"type": "pic_photo_or_album",
-			"name": "拍照或者相册发图",
-			"key": "rselfmenu_1_1"
-		}, {
-			"type": "pic_weixin",
-			"name": "微信相册发图",
-			"key": "rselfmenu_1_2",
-		}, {
-			"type": "location_select",
-			"name": "发送位置",
-			"key": "rselfmenu_2_0"
-		}, {
-			"type": "scancode_waitmsg",
-			"name": "扫码推送",
-			"key": "qr_scan"
-		},{
-            "type": "pic_sysphoto", 
-            "name": "系统拍照发图", 
-            "key": "pic_photo", 
-           "sub_button": [ ]
-         }]
-	}]
+    "button": [{
+        "type": "click",
+        "name": "今日歌曲",
+        "key": "menu_click"
+    }, {
+        "name": "菜单1",
+        "sub_button": [{
+            "type": "view",
+            "name": "语音搜索",
+            "url": "http://c208ca1c.ngrok.io/movie"
+        }, {
+            "type": "click",
+            "name": "赞一下我们",
+            "key": "V1001_GOOD"
+        }, {
+            "type": "scancode_waitmsg",
+            "name": "扫码推送",
+            "key": "qr_scan"
+        }, {
+            "type": "pic_sysphoto",
+            "name": "系统拍照发图",
+            "key": "pic_photo",
+            "sub_button": []
+        }]
+    }, {
+        "name": "菜单2",
+        "sub_button": [{
+            "type": "pic_photo_or_album",
+            "name": "拍照或者相册发图",
+            "key": "rselfmenu_1_1"
+        }, {
+            "type": "pic_weixin",
+            "name": "微信相册发图",
+            "key": "rselfmenu_1_2",
+        }, {
+            "type": "location_select",
+            "name": "发送位置",
+            "key": "rselfmenu_2_0"
+        }, {
+            "type": "scancode_waitmsg",
+            "name": "扫码推送",
+            "key": "qr_scan"
+        }, {
+            "type": "pic_sysphoto",
+            "name": "系统拍照发图",
+            "key": "pic_photo",
+            "sub_button": []
+        }]
+    }]
 }
 
 // "button": [{
@@ -99,4 +99,3 @@ module.exports = {
 //            "sub_button": [ ]
 //          }]
 // 	}]
-
