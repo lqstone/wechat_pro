@@ -23,6 +23,8 @@ var tpl = heredoc(function() {/*
 <body>
 	<div id="voice">点击标题，开始录音翻译</div>
 	<p id="title"></p>
+	<p id="director"></p>
+	<p id="year"></p>
 	<div id="poster"></div>
 </body>
 <script src="http://zeptojs.com/zepto-docs.min.js"></script>
@@ -39,12 +41,30 @@ wx.config({
 		'startRecord',
 		'stopRecord',
 		'onVoiceRecordEnd',
-		'translateVoice'
+		'translateVoice',
+		'onMenuShareTimeline',
+		'onMenuShareAppMessage',
+		'onMenuShareQQ',
+		'onMenuShareWeibo',
+		'onMenuShareQZone',
     ] // 必填，需要使用的JS接口列表
 });
 
 
 wx.ready(function(){
+	
+	wx.onMenuShareAppMessage({
+		title: '分享标题', 
+		desc: '这是个豆瓣电影链接', 
+		link: 'http://847a5280.ngrok.io/movie',
+		imgUrl: 'www.baidu.com/img/bd_logo1.png?where=super',
+		success: function () {
+			alert('分享成功')
+		},
+		cancel: function() {
+			alert('分享失败')
+		}
+	});
 	wx.checkJsApi({
 	    jsApiList: ['onVoiceRecordEnd'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
 	    success: function(res) {
@@ -73,6 +93,20 @@ wx.ready(function(){
 					isShowProgressTips: 1, // 默认为1，显示进度提示
 					success: function (res) {
 						alert(res.translateResult); // 语音识别的结果
+						$.ajax({
+							type: 'GET',
+							url: 'https://api.douban.com/v2/movie/search?q=' + '黑客帝国',
+							dataType: 'jsonp',
+							success: function(data) {
+								console.log("data", data)
+								var subjects = data.subjects[0]
+								$('#title').html(subjects.title)
+								$('#director').html(subjects.directors[0].name)
+								$('#poster').html('<img src="'+ subjects.images.medium +'">')
+								$('#year').html(subjects.year)
+								
+							}
+						})
 					}
 				});
 			}
