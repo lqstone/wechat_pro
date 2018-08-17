@@ -1,8 +1,10 @@
 /*
 	微信的所有业务逻辑
  */
-var Wechat = require('../wechat/wechat.js')
-var wechatApi = new Wechat()
+// var Wechat = require('../wechat/wechat.js')
+// var wechatApi = new Wechat()
+var wx = require('./index.js')
+var wechatApi = wx.getWechat()
 var menu = require('./menu.js')
 var path = require('path')
 

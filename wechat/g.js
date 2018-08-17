@@ -3,7 +3,8 @@
  */
 
 var sha1 = require('sha1')
-var config = require('../config.js')
+// var config = require('../config.js')
+var config = require('../wx/index').wechatOptions
 var Wechat = require('./wechat.js')
 var getRawBody = require('raw-body')
 var util = require('./util.js')
@@ -19,6 +20,8 @@ module.exports = (handler) => {
   var wechat = new Wechat()
   return async (ctx, next) => {
     console.log("ctx.query", ctx.query)
+
+// console.log(111111111111111,  config)
     var token = config.wechat.token
     var signature = ctx.query.signature
     var nonce = ctx.query.nonce

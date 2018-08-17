@@ -4,9 +4,14 @@
  */
 
 
+var config = require('./index.js').wechatOptions
 var Promise = require('bluebird')
 var request = Promise.promisify(require('request'))
-var config = require('../config.js')
+
+
+// var config = wx.wechatOptions
+
+
 var util = require('./util.js')
 var fs = require('fs')
 var _ = require('lodash')
