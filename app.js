@@ -2,7 +2,8 @@ var Koa = require('koa')
 var reply = require('./wx/reply.js') // 处理微信逻辑
 var app = new Koa()
 // var Wechat = require('./wechat/wechat.js')
-var wechat = require('./wechat/g.js')
+// var wechat = require('./wechat/g.js')
+var wechat = require('./controller/wechat.js')
 var Promise = require('bluebird')
 var request = Promise.promisify(require('request'))
 // var wechatApi = new Wechat()
@@ -30,10 +31,10 @@ router.get('/movie', game.movie)
 	路由页面
  */
 
-app.use(wechat(reply.reply)) // 业务逻辑传给weixin.reply来处理
+// app.use(wechat(reply.reply)) // 业务逻辑传给weixin.reply来处理
 
-// router.get('/wechat', wechat.hear)
-// router.post('/wechat', wechat.hear)
+router.get('/wechat', wechat.hear)
+router.post('/wechat', wechat.hear)
 
 
 router.get('/', async (ctx) => {
