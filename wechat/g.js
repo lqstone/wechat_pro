@@ -48,8 +48,8 @@ module.exports = (handler) => {
       })
 
       console.log("ctx.req返回的信息", ctx.req)
-      console.log("微信返回的信息", data)
       var content = await util.parseXMLAsync(data) // 对xml格式进行解析
+      console.log("微信返回的信息", content)
       var message = util.formatMessage(content.xml)
       console.log("结果", message)
 
