@@ -29,3 +29,14 @@ echostr	    随机字符串
 #### npm包支持
 
 > raw-body 拼装http中的request对象，最终拿到一个buffer的xml数据
+
+
+> assert assert模块是Node的内置模块，主要用于断言。如果表达式不符合预期，就抛出一个错误,可用于测试模块功能，有少数几个是常用的。
+
+[博文介绍](https://segmentfault.com/a/1190000007179791)
+
+
+
+#### 数据库
+
+

@@ -1,16 +1,20 @@
-var Koa = require('koa')
-var reply = require('./wx/reply.js') // 处理微信逻辑
-var app = new Koa()
-// var Wechat = require('./wechat/wechat.js')
-// var wechat = require('./wechat/g.js')
-var wechat = require('./controller/wechat.js')
-var Promise = require('bluebird')
-var request = Promise.promisify(require('request'))
-// var wechatApi = new Wechat()
-var wx = require('./wx/index.js') // 实例化的wechat
-
+const Koa = require('koa')
 const path = require('path')
+const app = new Koa()
+const Promise = require('bluebird')
+const request = Promise.promisify(require('request'))
+const wechat = require('./controller/wechat.js')
+const wx = require('./wx/index.js') // 实例化的wechat
+const http = require('http')
+
+const Dbclient = require('./db/db.js')
+
+
 const koaNunjucks = require('koa-nunjucks-2')
+
+
+
+
 
 
 app.use(koaNunjucks({
@@ -52,9 +56,44 @@ router.get('/wechat', wechat.hear)
 router.post('/wechat', wechat.hear)
 
 
+
+
 router.get('/', async (ctx) => {
-	ctx.body = "首页"
+	// Use connect method to connect to the server
+	// var _Dbclient = await new Dbclient()
+	var data = await Dbclient.findOne();
+	var data2 = await Dbclient.findAll();
+	console.log(111, data)
+	console.log(22, data2)
+	await ctx.render('index', {data: data, data2: data2})
 })
+
+// setTimeout(function(){
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+//     http.get('http://localhost:3000',function(res){console.log('request ok')});
+// },2000);
+
 router.get('/news', async (ctx) => {
 	console.log('111111', ctx.status)
 	await ctx.render('news', {
@@ -131,12 +170,10 @@ app.use(async (ctx, next) => {
 	try {
 		await next()
 		if (ctx.status === 404) {
-			console.log('这是个404页面')
 			await ctx.render('./layout/404')
 		}
 	} catch (err) {
 		// handle error
-		await ctx.render('./layout/404')
 	}
 })
 // 
